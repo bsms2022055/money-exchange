@@ -1,0 +1,31 @@
+from flask import Flask, render_template, request
+import requests
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/exchange', methods=['POST'])
+def exchange():
+    amount = float(request.form['amount'])
+    from_currency = request.form['from_currency']
+    to_currency = request.form['to_currency']
+    exchanged_amount = exchange_currency(amount, from_currency, to_currency)
+    return f"The exchanged amount is {exchanged_amount:.2f} {to_currency}"
+
+def exchange_currency(amount, from_currency, to_currency):
+    # Make API call to get exchange rate
+    url = f'https://api.exchangeratesapi.io/latest?base={from_currency}&symbols={to_currency}'
+    response = requests.get(url)
+    data = response.json()
+    rate = data['rates'][to_currency]
+    
+    # Perform exchange
+    exchanged_amount = amount * rate
+    
+    return exchanged_amount
+
+if __name__ == '__main__':
+    app.run(debug=True)
